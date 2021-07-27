@@ -14,7 +14,7 @@
 
    而 getApplication()在Context并没有定义，只是**在Activity和Service中定义**了getApplication()方法
 
-   ![Context](https://github.com/KaiShi1222/AndroidStudy/raw/main/Android_Context.png)
+   ![Context](https://github.com/KaiShi1222/AndroidStudy/raw/main/Android_Context.webp)
 
 2. **include, merge, ViewStub** 
 
