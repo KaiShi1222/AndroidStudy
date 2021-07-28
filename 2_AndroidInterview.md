@@ -111,6 +111,115 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 
 
 
+4. AAR 和 Jar区别**
+
+* AAR可以包含Android resource和manifest文件(必须)
+* AAR可以包含C/C++ library
+
+当构建多个应用，这些应用使用相同的组建时
+
+当构建一个应用，这个应用构建不同的变体版本（免费，付费，国内，国际）
+
+5. **Android 线程池**
+
+   * Thread
+   * AsyncTask: 封装了 Executor和Handler
+   * HandlerThread: 继承Thread，可以使用Handler, 在run方法中创建Looper并开启循环, 需要通过quit和quitSafely退出
+   * IntentService: 本质是一个Service, 内部封装了HandlerThread和Handler
+
+   线程池分类: Android中线程池的概念来自Java的Executor, Executor是个接口, 具体的实现是ThreadPoolExecutor, 
+
+   它可以配置线程核心数，线程池最大的线程数, 非核心线程keepAliveTime等等
+
+   Android中线程池分为
+
+   * FixedThreadPool: 只有核心线程, 并且数量固定的,也不会被回收
+
+   * SingleThreadPool
+
+     **只有一个核心线程**,确保所有的任务都在同一线程中按序完成.因此不需要处理线程同步的问题.
+
+   * CachedThreadPool
+
+     **只有非核心线程**,最大线程数非常大,所有线程都活动时会为新任务创建新线程,否则会利用空闲线程(60s空闲时间,过了就会被回收,所以线程池中有0个线程的可能)处理任务.
+
+   ​	优点:任何任务都会被立即执行(任务队列SynchronousQuue相当于一个空集合);比较适合执行大量的耗时较少的任务.
+
+   * ScheduledThreadPool
+
+     核心线程数固定,非核心线程（闲着没活干会被**立即回收数**）没有限制.
+
+     优点:执行**定时**任务以及有**固定周期**的重复任务
+
+6. **Fragment与Activity之间的交互**
+
+   * Activity传递数据给Fragment: 使用Bundle
+
+     ```java
+      Bundle bundle = new Bundle();    
+      bundle.putString("message", "I love Google");
+      fragment.setArguments(bundle);
+     ```
+
+   * Fragment传递数据给Activity: 回调接口
+
+   * EventBus实现fragment向Activity传值
+
+   * LiveData
+
+   ​    
+
+      Ref
+
+   1. https://cloud.tencent.com/developer/article/1394289
+   2. 
+
+7. **内存泄漏**
+
+   * 单例造成的内存泄漏
+
+   ```java
+   public class AppManager {
+     private static AppManager instance;
+     private Context context;
+       
+     private AppManager(Context context) {
+         this.context = context;
+     }
+     
+     public static AppManager getInstance(Context context) {
+       if (instance == null) {
+           instance = new AppManager(context);
+       }
+       return instance;
+     }
+   }
+   ```
+
+   * 集合造成的内存泄漏
+
+     HashMap、Vector等的使用容易出现内存泄露，比如这个集合类是全局性的变量，只有添加元素的方法，没有移除的方法，或者将集合对象设置为null
+
+     对GC来说这个对象是不可以回收的
+
+     ```java
+     Vector v = new Vector(10);
+     for (int i = 1; i < 100; i++) {
+         Object o = new Object();
+         v.add(o);
+         o = null;   
+     }
+     
+     ```
+
+   * 使用广播没有unregister, 文件流没有关闭等
+
+   * Handler 造成的内存泄漏: 本质原因是因为线程，不是内部类持有外部类引用
+
+     可以使用静态内部类和弱引用的方式
+
+
+
 
 
 
