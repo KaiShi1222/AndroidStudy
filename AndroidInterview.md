@@ -10,7 +10,7 @@
      - singleTask: 栈内复用模式.创建这样的Activity的时候,系统会先确认它所需任务栈已经创建,否则先创建任务栈.然后放入Activity,如果栈中已经有一个Activity实例,那么这个Activity就会被调到栈顶,`onNewIntent()`,并且singleTask会清理在当前Activity上面的所有Activity.**(clear top)**
      - singleInstance : 加强版的singleTask模式,这种模式的Activity只能单独位于一个任务栈内,由于栈内复用的特性,后续请求均不会创建新的Activity,除非这个独特的任务栈被系统销毁了
 
-   Activity的堆栈管理以ActivityRecord为单位,所有的ActivityRecord都放在一个List里面.可以认为一个ActivityRecord就是一个Activity栈
+   Activity的堆栈管理以**ActivityRecord**为单位,所有的ActivityRecord都放在一个List里面.可以认为**一个ActivityRecord就是一个Activity栈**
 
 2. **Android中的动画**
 
@@ -20,7 +20,7 @@
 
      四种变化: 平移，缩放，旋转，透明度动画
 
-     分别对应Animation四个子类, 这四种动画可以通过**xml**或**代码**来定义
+     分别对应**Animation四个子类**, 这四种动画可以通过**xml**或**代码**来定义
 
      ```kotlin
      val animation: Animation = AnimationUtils.loadAnimation(this, R.anim.animation_test)
@@ -145,38 +145,57 @@
            }
        ```
        
+       使用动画需要注意的事项:
        
+       1. OOM: 图片数量较多或者图片比较大的时候可能会出现OOM, 比如在使用帧动画的时候
+       2. 内存泄漏: 有一类动画无限循环, 需要在Activity退出时，及时停止
+       3. View动画只是对View的影像做动画，并不是正在的改变View状态, 出现View无法隐藏的情况，调用view.clearAnimation()
+       4. 使用dp代替px, px不同设备效果会不一致
+     
+     Ref: https://zhuanlan.zhihu.com/p/138277431
 
    3. **ANR**
 
       1. 什么是ANR
 
-         ANR是指应用程序未响应，Android系统对于一系列事件需要在**一定时间内完成**，如果超出预定时间**未能响应**或者**响应时间过长**，都会造成ANR. 具体来说是system_server进程启动倒计时，如果应用进程在规定的时间没有执行完需要的任务，触发ANR
+         ANR是指应用程序未响应，Android系统对于一系列事件需要在**一定时间内完成**，如果超出预定时间**未能响应**或者**响应时间过长**，都会造成ANR. 具体来说是**system_server**进程启动倒计时，如果应用进程在规定的时间没有执行完需要的任务，触发ANR
 
       2. 哪些场景会造成ANR呢
 
+         从system_server发送延时消息到移除这个消息的整个过程中.
+      
+      以service为例
+      
+      * 主线程消息队列中有耗时消息，service收不到回调方法
+      
+      * 可能回调方法执行慢, 比如onStartCommand
+         * SP持久化比较慢
+
       * Service Timeout: 比如**前台**服务在20s内未执行完成
+
       * BroadcastQueue Timeout：比如**前台**广播在10s内未执行完成
-
+      
+        SP的apply将修改的数据项更新到内存，然后再异步同步数据到磁盘文件，因此很多地方会推荐在主线程调用采用apply方式，避免阻塞主线程，但静态广播超时检测过程需要SP全部持久化到磁盘，如果过度使用apply会增大应用ANR的概率
+      
       3. ANR是怎么判断超时时间的
-
+      
          system_server在控制每个组件的生命周期回调的时候，通过handler发送延时消息，如果超时，就触发ANR，如果没有，就将这个消息从消息队列中取出
-
-         在判断Activity的InputDispatching超时的情况下，是InputDispatcher发现**上一个事件没有处理完，新的事件又进来了**，才会去走ANR。
-
-      4. ANR发生后操作
-
+      
+      在判断Activity的InputDispatching超时的情况下，是InputDispatcher发现**上一个事件没有处理完，新的事件又进来了**，才会去走ANR。
+      
+   4. ANR发生后操作
+      
          - 将am_anr信息输出到EventLog，也就是说ANR触发的时间点最接近的就是EventLog中输出的am_anr信息
          - 收集以下重要进程的各个线程调用栈trace信息，保存在**data/anr/traces.txt**文件
-           - 当前发生ANR的进程，system_server进程以及所有persistent进程
+           - 当前发生**ANR的进程**，**system_server进程**以及所有persistent进程
            - audioserver, cameraserver, mediaserver, surfaceflinger等重要的**native**进程
            - CPU使用率排名前5的进程
-         - 将发生ANR的reason以及CPU使用情况信息输出到main log
+         - 将发生ANR的reason以及CPU使用情况信息输出到**main log**
          - 将traces文件和CPU使用情况信息保存到dropbox，即data/system/dropbox目录
          - 对用户可感知的进程则弹出ANR**对话框**告知用户，对用户不可感知的进程发生ANR则直接杀掉
-
+      
          Ref
-
+      
          1. [彻底理解安卓应用无响应机制](http://gityuan.com/2019/04/06/android-anr/)
 
    
@@ -228,6 +247,10 @@
       ​    创建Handle时，会持有这个线程的Looper对象和MessageQueue对象，该Looper对象和handler处于同一个线程. 并存储在ThreadLocal中
 
       ​    当B线程发送一个消息时, 消息最终会通过msg.target.dispatchMessage(msg)处理
+
+      
+
+      我们可以在A线程正常创建handlerA，然后在B线程中利用handlerA发送消息，此时消息就发送给与handlerA关联的Looper了，而这个Looper唯一关联的线程就是A，这样我们的消息就会在A线程中执行了
 
       ![](/home/shikai/Working/myself/study/handle_class.jpg)
 
@@ -308,6 +331,7 @@
 
         Parcelable主要用于内存的序列化， Serializable用于网络或者本地存储，网络传输也可以通过Gson等方式
 
+
 6. **MVC, MVP, MVVM**
 
 * MVC: 分为Model, View, Controller
@@ -352,7 +376,7 @@ MVP的优点:
 
 MVP的不足/注意的地方
 
-1. 会添加过多的接口，接口的颗粒度不好掌握，文件数量会大大增加
+1. 会添加**过多的接口**，接口的颗粒度不好掌握，文件数量会大大增加
 
 如何优化: 采用泛型定义契约类，将model、view、presenter定义在一个契约类中
 
@@ -394,7 +418,7 @@ Model层：包含repository层，也就是仓库层，用于处理数据从本�
 
 LiveData具有生命周期感知能力，通过观察者模式，当数据更新后，自动将数据推送给活跃的UI组件
 
-ViewModel比需要更新的View的生命周期长，因此不要持有View对象，包括context对象
+ViewModel比需要更新的View的生命周期长，因此**不能**持有View对象，包括context对象
 
 MVVM的好处:  MVP 的基础上，MVVM 把 View 和 ViewModel 也进行了解耦
 
