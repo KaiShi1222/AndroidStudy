@@ -38,7 +38,7 @@
 
    * 帧动画
 
-     顺序播放一组定义好的图片，由AnimationDrawable来使用
+     **顺序播放一组定义好的图片**，由**AnimationDrawable**来使用
 
      ```kotlin
      val button = findViewById<Button>(R.id.bt)
@@ -149,7 +149,7 @@
        
        1. OOM: 图片数量较多或者图片比较大的时候可能会出现OOM, 比如在使用帧动画的时候
        2. 内存泄漏: 有一类动画无限循环, 需要在Activity退出时，及时停止
-       3. View动画只是对View的影像做动画，并不是正在的改变View状态, 出现View无法隐藏的情况，调用view.clearAnimation()
+       3. View动画只是对View的影像做动画，并**不是真正的改变View状态**, 出现View无法隐藏的情况，调用view.clearAnimation()
        4. 使用dp代替px, px不同设备效果会不一致
      
      Ref: https://zhuanlan.zhihu.com/p/138277431
@@ -169,10 +169,11 @@
       * 主线程消息队列中有耗时消息，service收不到回调方法
       
       * 可能回调方法执行慢, 比如onStartCommand
-         * SP持久化比较慢
-
-      * Service Timeout: 比如**前台**服务在20s内未执行完成
-
+         
+* SP持久化比较慢
+         
+* Service Timeout: 比如**前台**服务在20s内未执行完成
+      
       * BroadcastQueue Timeout：比如**前台**广播在10s内未执行完成
       
         SP的apply将修改的数据项更新到内存，然后再异步同步数据到磁盘文件，因此很多地方会推荐在主线程调用采用apply方式，避免阻塞主线程，但静态广播超时检测过程需要SP全部持久化到磁盘，如果过度使用apply会增大应用ANR的概率
@@ -193,8 +194,9 @@
          - 将发生ANR的reason以及CPU使用情况信息输出到**main log**
          - 将traces文件和CPU使用情况信息保存到dropbox，即data/system/dropbox目录
          - 对用户可感知的进程则弹出ANR**对话框**告知用户，对用户不可感知的进程发生ANR则直接杀掉
-      
-         Ref
+        
+         
+      Ref
       
          1. [彻底理解安卓应用无响应机制](http://gityuan.com/2019/04/06/android-anr/)
 
@@ -218,7 +220,7 @@
 
          * Message为消息本身
 
-           ![](/home/shikai/Working/myself/study/handler_java.jpg)
+           ![](https://github.com/KaiShi1222/AndroidStudy/raw/main/handler_java.jpg)
 
       当通过send或者post发送消息后，最后都会调用MessageQueue的enqueueMessage方法，该方法用于插入消息。该方法内部是由单链表实现的，这样做的好处在于方便插入和删除。
 
@@ -244,7 +246,7 @@
 
       A: 通过ThreadLocal, ThreadLocal是线程内部的数据存储类，以线程为单位不同线程可以获得不同的数据副本
 
-      ​    创建Handle时，会持有这个线程的Looper对象和MessageQueue对象，该Looper对象和handler处于同一个线程. 并存储在ThreadLocal中
+      ​    创建Handle时，**会持有这个线程的Looper对象和MessageQueue对象**，该Looper对象和handler处于同一个线程. 并存储在ThreadLocal中
 
       ​    当B线程发送一个消息时, 消息最终会通过msg.target.dispatchMessage(msg)处理
 
@@ -252,7 +254,7 @@
 
       我们可以在A线程正常创建handlerA，然后在B线程中利用handlerA发送消息，此时消息就发送给与handlerA关联的Looper了，而这个Looper唯一关联的线程就是A，这样我们的消息就会在A线程中执行了
 
-      ![](/home/shikai/Working/myself/study/handle_class.jpg)
+      ![](https://github.com/KaiShi1222/AndroidStudy/raw/main/handle_class.jpg)
 
       **线程的转换由 Looper 完成，handleMessage() 所在线程由 Looper.loop() 调用者所在线程决定**，不是创建handler的线程。
 
@@ -281,10 +283,10 @@
       真正会卡死主线程的操作是在回调方法onCreate/onStart/onResume等操作时间过长，会导致掉帧，甚至发生ANR，looper.loop本身不会导致应用卡死。
 
       Ref: Handle
-
+   
       1. https://www.huaweicloud.com/articles/029b0f537168b7328a4bf621c127c1a3.html
       2. http://gityuan.com/2015/12/26/handler-message-framework/
-      3. https://juejin.cn/post/6844903886675935239
+   3. https://juejin.cn/post/6844903886675935239
       4. https://segmentfault.com/a/1190000022551072
 
    5. **Android 序列化**
@@ -309,9 +311,9 @@
 
         通过指定UID，可以很大程度避免反序列化的失败
 
-        静态成员属于类，不属于对象，因此不会参加序列化的过程
+        **静态成员**属于类，不属于对象，因此不会参加序列化的过程
 
-        使用transient的对象不参与序列化
+        使用**transien**t的对象不参与序列化
 
       2. Parcelable
 
@@ -328,7 +330,7 @@
        由于存在大量I/O操作，效率比较低
 
         使用上，Parcelable相对麻烦一点，但是效率比较高
-
+   
         Parcelable主要用于内存的序列化， Serializable用于网络或者本地存储，网络传输也可以通过Gson等方式
 
 
@@ -396,7 +398,7 @@ ViewModel无关，只是Android Jetpack中的ViewModel可以充当MVVM架构的V
 
  
 
-MVVM的本质是数据驱动，ViewModel不持有view，进一步解耦合
+MVVM的本质是**数据驱动**，ViewModel不持有view，进一步解耦合
 
  
 
@@ -438,22 +440,22 @@ Ref:
 
 7. **Android系统启动流程**
 
-   ![](/home/shikai/Working/myself/study/android-booting.jpg)
+   ![](https://github.com/KaiShi1222/AndroidStudy/raw/main/android-booting.jpg)
 
-   当系统按下上电后，加载引导程序Bootloader到内存，Bootloader的主要作用是检查RAM，初始化硬件参数等功能。
+   当系统按下上电后，加载引导程序**Bootloader**到内存，Bootloader的主要作用是检查RAM，初始化硬件参数等功能。
 
    接着启动kernel, 创建swapper进程，这是系统的第一个进程pid = 0. 这个进程主要用于进程管理、内存管理，加载一些驱动. 
 
    再创建Linux系统的内核进程
 
-   当linux内核启动后，系统会启动init进程，这是第一个用户进程pid = 1
+   当linux内核启动后，系统会启动**init进程**，这是第一个**用户进程pid = 1**
 
    * init进程
 
      进程启动后主要做如下几件事
 
      * 查找并解析init.rc文件, 创建和挂载一些文件的目录
-     * 初始化子进程退出的处理函数
+     * 初始化**子进程退出的处理函数**
 
      接着调用property_init函数对属性初始化, 属性初始化以后，接着启动属性服务， 即创建Socket, 并设置监听，当有数据到来时init进程调用相应的处理函数进行处理
 
@@ -467,18 +469,18 @@ Ref:
 
    * Zygote进程
 
-     Zygote进程启动Java虚拟机, 并注册JNI方法, 通过JNI调用从Native层到Java层，调用ZygoteInit的main方法
+     Zygote进程启动**Java虚拟机**, 并**注册JNI方法**, **通过JNI调用从Native层到Java层，调用ZygoteInit的main方法**
 
      这个main方法主要做几件事
 
      * 创建一个zygote的服务端的Socket
      * 预加载类和资源 drawable和color资源
      * 等待AMS请求创建新的应用程序进程
-     * 创建system_server进程 (通过fork)
+     * **创建system_server进程** (通过fork)
 
    * system_server进程
 
-     system_server进程用于创建系统服务，比如AMS, PMS, WMS等
+     system_server进程用于**创建系统服务**，比如AMS, PMS, WMS等
 
      system_server会启动一个Binder线程池，用于和其他进程通信
 
@@ -490,4 +492,5 @@ Ref:
 
    * 最后AMS会启动Launcher应用，将安装的应用图标显示出来
 
-     ![](/home/shikai/Working/myself/study/android-boot.jpg)
+     ![](https://github.com/KaiShi1222/AndroidStudy/raw/main/android-boot.jpg)
+

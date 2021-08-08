@@ -120,6 +120,10 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 
 当构建一个应用，这个应用构建不同的变体版本（免费，付费，国内，国际）
 
+Ref: https://developer.android.com/studio/projects/android-library?hl=zh-cn#PrivateResources
+
+版本依赖冲突的解决方案: https://blog.csdn.net/yuzhiqiang_1993/article/details/78214812
+
 5. **Android 线程池**
 
    * Thread
@@ -147,7 +151,7 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 
    * ScheduledThreadPool
 
-     核心线程数固定,非核心线程（闲着没活干会被**立即回收数**）没有限制.
+     **核心线程数固定**,非核心线程（闲着没活干会被**立即回收数**）没有限制.
 
      优点:执行**定时**任务以及有**固定周期**的重复任务
 
@@ -220,7 +224,13 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 
 
 
+8. implement 和api区别
 
+   https://stackoverflow.com/questions/44413952/gradle-implementation-vs-api-configuration
+
+   api : 传递性
+
+   implement: 没有传递性
 
 
 
