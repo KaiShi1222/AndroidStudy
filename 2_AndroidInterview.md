@@ -89,17 +89,26 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 一些重要的结论:
 
 1. 事件传递优先级：onTouchListener.onTouch > onTouchEvent > onClickListener.onClick。
-
 2. View的enable属性不影响onTouchEvent的默认返回值。
-
 3. 通过requestDisallowInterceptTouchEvent方法可以在子元素中干预父元素的事件分发过程，但是ACTION_DOWN事件除外。因为dispatchTouchEvent方法会重置DISALLOW_INTERCEPT标志位
+
+子元素是否能接受事件:需要满足两个条件
+
+1. 子元素在播放动画
+2. 点击事件的坐标落在子元素区域内
+
+View对点击事件的处理
+
+1. 首先判断是否设置onTouchListener, onTouch返回true时，onTouchEvent就不会调用
+
+2. onTouchEvent 内部会对具体的action进行相应， 只要View的CLICKABLE或LONG_CLICKABLE有一个为true就会消耗这个事件
 
 ------
 
 滑动冲突: 
 
-* 内外部滑动方向一致
 * 内外部滑动方向不一致
+* 内外部滑动方向一致
 * 上面两种情况嵌套
 
 外部拦截法：指点击事件都**先经过父容器**的拦截处理，如果父容器需要此事件就拦截，否则就不拦截。具体方法：需要重写父容器的**onInterceptTouchEvent**方法，在内部做出相应的拦截。
@@ -123,6 +132,32 @@ public boolean dispatchTouchEvent(MotionEvent ev) {
 Ref: https://developer.android.com/studio/projects/android-library?hl=zh-cn#PrivateResources
 
 版本依赖冲突的解决方案: https://blog.csdn.net/yuzhiqiang_1993/article/details/78214812
+
+1. ./gradlew -q app:dependencies
+
+   ```groovy
+   api("dependencies_name") {
+           exclude group: 'com.android.support', module: 'support-v13'
+           exclude group: 'com.android.support', module: 'support-vector-drawable'
+       }
+   ```
+
+2. Grovvy脚本修改版本号解决冲突
+
+   ```groovy
+   configurations.all {
+       resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+           def requested = details.requested
+           if (requested.group == 'com.android.support') {
+               if (!requested.name.startsWith("multidex")) {
+                   details.useVersion '28.0.0'
+               }
+           }
+       }
+   }
+   ```
+
+3. 迁移到androidx
 
 5. **Android 线程池**
 
